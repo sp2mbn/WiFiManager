@@ -3918,6 +3918,7 @@ void WiFiManager::handleUpdate() {
 	page += str;
 
 	page += FPSTR(HTTP_UPDATE);
+  if(_showBack) page += FPSTR(HTTP_BACKBTN);
 	page += getHTTPEnd();
 
 	HTTPSend(page);
