@@ -642,20 +642,20 @@ void WiFiManager::setupHTTPServer(){
 
   // G macro workaround for Uri() bug https://github.com/esp8266/Arduino/issues/7102
   server->on(WM_G(R_root),       std::bind(&WiFiManager::handleRoot, this));
-  server->on(WM_G(R_wifi),       std::bind(&WiFiManager::handleWifi, this, true));
-  server->on(WM_G(R_wifinoscan), std::bind(&WiFiManager::handleWifi, this, false));
+  if (_allowAllRoutes || isTokenInMenu(_wifi_token)) server->on(WM_G(R_wifi),       std::bind(&WiFiManager::handleWifi, this, true));
+  if (_allowAllRoutes || isTokenInMenu(_wifinoscan_token)) server->on(WM_G(R_wifinoscan), std::bind(&WiFiManager::handleWifi, this, false));
   server->on(WM_G(R_wifisave),   std::bind(&WiFiManager::handleWifiSave, this));
-  server->on(WM_G(R_info),       std::bind(&WiFiManager::handleInfo, this));
-  server->on(WM_G(R_param),      std::bind(&WiFiManager::handleParam, this));
+  if (_allowAllRoutes || isTokenInMenu(_info_token)) server->on(WM_G(R_info),       std::bind(&WiFiManager::handleInfo, this));
+  if (_allowAllRoutes || isTokenInMenu(_param_token)) server->on(WM_G(R_param),      std::bind(&WiFiManager::handleParam, this));
   server->on(WM_G(R_paramsave),  std::bind(&WiFiManager::handleParamSave, this));
-  server->on(WM_G(R_restart),    std::bind(&WiFiManager::handleReset, this));
-  server->on(WM_G(R_exit),       std::bind(&WiFiManager::handleExit, this));
-  server->on(WM_G(R_close),      std::bind(&WiFiManager::handleClose, this));
-  server->on(WM_G(R_erase),      std::bind(&WiFiManager::handleErase, this, false));
-  server->on(WM_G(R_status),     std::bind(&WiFiManager::handleWiFiStatus, this));
+  if (_allowAllRoutes || isTokenInMenu(_restart_token)) server->on(WM_G(R_restart),    std::bind(&WiFiManager::handleReset, this));
+  if (_allowAllRoutes || isTokenInMenu(_exit_token)) server->on(WM_G(R_exit),       std::bind(&WiFiManager::handleExit, this));
+  if (_allowAllRoutes || isTokenInMenu(_close_token)) server->on(WM_G(R_close),      std::bind(&WiFiManager::handleClose, this));
+  if (_allowAllRoutes || isTokenInMenu(_restart_token)) server->on(WM_G(R_erase),      std::bind(&WiFiManager::handleErase, this, false));
+  if (_allowAllRoutes || isTokenInMenu(_restart_token)) server->on(WM_G(R_status),     std::bind(&WiFiManager::handleWiFiStatus, this));
   server->onNotFound (std::bind(&WiFiManager::handleNotFound, this));
 
-  server->on(WM_G(R_update), std::bind(&WiFiManager::handleUpdate, this));
+  if (_allowAllRoutes || isTokenInMenu(_update_token) || isTokenInMenu(_info_token)) server->on(WM_G(R_update), std::bind(&WiFiManager::handleUpdate, this));
   server->on(WM_G(R_updatedone), HTTP_POST, std::bind(&WiFiManager::handleUpdateDone, this), std::bind(&WiFiManager::handleUpdating, this));
 
   server->begin(); // Web server start
@@ -3247,6 +3247,15 @@ void WiFiManager::setMenu(std::vector<const char *>& menu){
   #endif
 }
 
+bool WiFiManager::isTokenInMenu(const char * token){
+  for(auto menuId :_menuIds ){
+    if((String)_menutokens[menuId] == token){
+      return true;
+    }
+  }
+  return false;
+}
+
 
 /**
  * set params as sperate page not in wifi
@@ -3340,6 +3349,13 @@ void WiFiManager::setHttpPort(uint16_t port){
   _httpPort = port;
 }
 
+/**
+ * setAllowAllRoutes
+ * @param bool enable, enable acccess all pages even if not in menu
+ */
+void WiFiManager::setAllowAllRoutes(bool enable){
+  _allowAllRoutes = enable;
+}
 
 bool WiFiManager::preloadWiFi(String ssid, String pass){
   _defaultssid = ssid;

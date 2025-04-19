@@ -442,6 +442,8 @@ class WiFiManager
     void          setMenu(std::vector<const char*>& menu);
     void          setMenu(const char* menu[], uint8_t size);
 
+    bool          isTokenInMenu(const char * token);
+
     // set the webapp title, default WiFiManager
     void          setTitle(String title);
 
@@ -493,6 +495,9 @@ class WiFiManager
 
     // set port of webserver, 80
     void          setHttpPort(uint16_t port);
+
+    // allow acces all pages even not in menu
+    void          setAllowAllRoutes(bool enable);
 
     // check if config portal is active (true)
     bool          getConfigPortalActive();
@@ -572,6 +577,7 @@ class WiFiManager
                                                    // on some conn failure modes will add delays and many retries to work around esp and ap bugs, ie, anti de-auth protections
                                                    // https://github.com/tzapu/WiFiManager/issues/1067
     bool          _allowExit              = true; // allow exit in nonblocking, else user exit/abort calls will be ignored including cptimeout
+    bool          _allowAllRoutes         = true; // allow all routes even if not added to menu. If false server will serve only pages from menu
 
     #ifdef ESP32
     wifi_event_id_t wm_event_id           = 0;
