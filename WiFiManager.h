@@ -499,6 +499,9 @@ class WiFiManager
     // allow acces all pages even not in menu
     void          setAllowAllRoutes(bool enable);
 
+    // show status of wifi connection on pages
+    void          setShowStatus(bool enable);
+
     // check if config portal is active (true)
     bool          getConfigPortalActive();
 
@@ -578,6 +581,7 @@ class WiFiManager
                                                    // https://github.com/tzapu/WiFiManager/issues/1067
     bool          _allowExit              = true; // allow exit in nonblocking, else user exit/abort calls will be ignored including cptimeout
     bool          _allowAllRoutes         = true; // allow all routes even if not added to menu. If false server will serve only pages from menu
+    bool          _showStatus             = true; // show status of wifi connection on pages
 
     #ifdef ESP32
     wifi_event_id_t wm_event_id           = 0;
