@@ -237,6 +237,73 @@ class WiFiManagerParameter {
     const char *_customHTML;
 };
 
+class WiFiManagerParameterCheckbox : public WiFiManagerParameter {
+public:
+    WiFiManagerParameterCheckbox(
+        const char* name,
+        const char* label,
+        const char* value,
+        bool        checked = false,
+        const char* custom = "",
+        int         labelPlacement = WFM_LABEL_AFTER);
+
+    virtual String getHTML() const;
+    virtual void   setValueReceived(const char* value);
+
+    bool getChecked() const;
+    void setChecked(bool checked);
+
+private:
+    bool _checked;
+};
+
+class WiFiManagerParameterRadio;
+
+class WiFiManagerParameterRadioOption {
+public:
+    WiFiManagerParameterRadioOption(
+        WiFiManagerParameterRadio& radio,
+        const char* id,
+        const char* label,
+        const char* value,
+        bool        checked = false);
+
+    virtual ~WiFiManagerParameterRadioOption();
+
+    const char* getID() const;
+    const char* getLabel() const;
+    const char* getValue() const;
+
+    bool getChecked() const;
+    void setChecked(bool checked);
+
+    virtual String getHTML() const;
+
+private:
+    WiFiManagerParameterRadio& _radio;
+    const char* _id;
+    const char* _label;
+    const char* _value;
+};
+
+class WiFiManagerParameterRadio : public WiFiManagerParameter {
+public:
+    WiFiManagerParameterRadio(
+        const char* name,
+        const char* custom = "",
+        int         labelPlacement = WFM_LABEL_AFTER);
+
+    void addOption(WiFiManagerParameterRadioOption& option, bool checked = false);
+    void removeOption(WiFiManagerParameterRadioOption& option);
+
+    virtual String getHTML() const;
+    virtual void   setValueReceived(const char* value);
+
+private:
+    std::vector<WiFiManagerParameterRadioOption*> options;
+    size_t maxBufferSize;
+};
+
 
     // debugging
     typedef enum {
