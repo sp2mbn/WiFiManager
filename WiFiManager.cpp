@@ -913,20 +913,20 @@ bool WiFiManager::startAP(){
   // default channel is 1 here and in esplib, @todo just change to default remove conditionals
   if (_apPassword != "") {
     if(channel>0){
-      ret = WiFi.softAP(_apName.c_str(), _apPassword.c_str(),channel,_apHidden);
+      ret = WiFi.softAP(_apName.c_str(), _apPassword.c_str(),channel,_apHidden, _apMaxConnections);
     }
     else{
-      ret = WiFi.softAP(_apName.c_str(), _apPassword.c_str(),1,_apHidden);//password option
+      ret = WiFi.softAP(_apName.c_str(), _apPassword.c_str(),1,_apHidden, _apMaxConnections);//password option
     }
   } else {
     #ifdef WM_DEBUG_LEVEL
     DEBUG_WM(WM_DEBUG_VERBOSE,F("AP has anonymous access!"));
     #endif
     if(channel>0){
-      ret = WiFi.softAP(_apName.c_str(),"",channel,_apHidden);
+      ret = WiFi.softAP(_apName.c_str(),"",channel,_apHidden, _apMaxConnections);
     }
     else{
-      ret = WiFi.softAP(_apName.c_str(),"",1,_apHidden);
+      ret = WiFi.softAP(_apName.c_str(),"",1,_apHidden, _apMaxConnections);
     }
   }
 
@@ -1754,10 +1754,12 @@ void WiFiManager::handleRoot() {
   if (captivePortal()) return; // If captive portal redirect instead of displaying the page
   handleRequest();
   String page = getHTTPHead(_title, FPSTR(C_root)); // @token options @todo replace options with title
-  String str  = FPSTR(HTTP_ROOT_MAIN); // @todo custom title
-  str.replace(FPSTR(T_t),_title);
-  str.replace(FPSTR(T_v),configPortalActive ? _apName : (getWiFiHostname() + " - " + WiFi.localIP().toString())); // use ip if ap is not active for heading @todo use hostname?
-  page += str;
+  if (_showTitle) {
+    String str  = FPSTR(HTTP_ROOT_MAIN); // @todo custom title
+    str.replace(FPSTR(T_t),_title);
+    str.replace(FPSTR(T_v),configPortalActive ? _apName : (getWiFiHostname() + " - " + WiFi.localIP().toString())); // use ip if ap is not active for heading @todo use hostname?
+    page += str;
+  }
   page += FPSTR(HTTP_PORTAL_OPTIONS);
   page += getMenuOut();
   if (_showStatus) reportStatus(page);
@@ -2688,6 +2690,19 @@ String WiFiManager::getInfoData(String id){
   return p;
 }
 
+void WiFiManager::setAPMaxConnections(int maxConnections) {
+  #ifdef WM_DEBUG_LEVEL
+  DEBUG_WM(WM_DEBUG_DEV,F("setAPMaxConnections"),maxConnections);
+  #endif
+  if (maxConnections < 1 || maxConnections > 16) {
+    #ifdef WM_DEBUG_LEVEL
+    DEBUG_WM(WM_DEBUG_ERROR,F("[ERROR] setAPMaxConnections invalid value, must be between 1 and 16"));
+    #endif
+    return;
+  }
+  _apMaxConnections = maxConnections;
+}
+
 /**
  * HTTPD CALLBACK exit, closes configportal if blocking, if non blocking undefined
  */
@@ -3541,6 +3556,13 @@ String WiFiManager::getWiFiHostname(){
 void WiFiManager::setTitle(String title){
   _title = title;
 }
+/**
+ * [setShowTitle description]
+ * @param bool show, show title on page
+ */
+void WiFiManager::setShowTitle(bool enable){
+  _showTitle = enable;
+}
 
 /**
  * [setShowBack description]
@@ -4303,10 +4325,12 @@ void WiFiManager::handleUpdate() {
   #endif
 	if (captivePortal()) return; // If captive portal redirect instead of displaying the page
 	String page = getHTTPHead(_title, FPSTR(C_update)); // @token options
-	String str = FPSTR(HTTP_ROOT_MAIN);
-  str.replace(FPSTR(T_t), _title);
-	str.replace(FPSTR(T_v), configPortalActive ? _apName : (getWiFiHostname() + " - " + WiFi.localIP().toString())); // use ip if ap is not active for heading
-	page += str;
+  if (_showTitle) {
+    String str = FPSTR(HTTP_ROOT_MAIN);
+    str.replace(FPSTR(T_t), _title);
+    str.replace(FPSTR(T_v), configPortalActive ? _apName : (getWiFiHostname() + " - " + WiFi.localIP().toString())); // use ip if ap is not active for heading
+    page += str;
+  }
 
 	page += FPSTR(HTTP_UPDATE);
   if(_showBack) page += FPSTR(HTTP_BACKBTN);
@@ -4414,10 +4438,12 @@ void WiFiManager::handleUpdateDone() {
 	// if (captivePortal()) return; // If captive portal redirect instead of displaying the page
 
 	String page = getHTTPHead(FPSTR(S_options), FPSTR(C_update)); // @token options
-	String str  = FPSTR(HTTP_ROOT_MAIN);
-  str.replace(FPSTR(T_t),_title);
-	str.replace(FPSTR(T_v), configPortalActive ? _apName : WiFi.localIP().toString()); // use ip if ap is not active for heading
-	page += str;
+  if (_showTitle) {
+    String str  = FPSTR(HTTP_ROOT_MAIN);
+    str.replace(FPSTR(T_t),_title);
+    str.replace(FPSTR(T_v), configPortalActive ? _apName : WiFi.localIP().toString()); // use ip if ap is not active for heading
+    page += str;
+  }
 
 	if (Update.hasError()) {
 		page += FPSTR(HTTP_UPDATE_FAIL);

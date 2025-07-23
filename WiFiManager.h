@@ -517,6 +517,9 @@ class WiFiManager
 
     // set the webapp title, default WiFiManager
     void          setTitle(String title);
+    
+    // show title on page, default true
+    void          setShowTitle(bool enable = true);
 
     // set back button on pages
     void          setShowBack(bool enable); // default false
@@ -585,6 +588,8 @@ class WiFiManager
     // get hostname helper
     String        getWiFiHostname();
 
+    void          setAPMaxConnections(int maxConnections);
+
 
     std::unique_ptr<DNSServer>        dnsServer;
 
@@ -628,7 +633,7 @@ class WiFiManager
     String        _pass                   = ""; // var temp psk
     String        _defaultssid            = ""; // preload ssid
     String        _defaultpass            = ""; // preload pass
-
+    int           _apMaxConnections       = 4;  // max connections to softap, default 4
     // options flags
     unsigned long _configPortalTimeout    = 0; // ms close config portal loop if set (depending on  _cp/webClientCheck options)
     unsigned long _connectTimeout         = 0; // ms stop trying to connect to ap if set
@@ -681,6 +686,7 @@ class WiFiManager
     boolean       _showInfoErase          = true;  // info page erase button
     boolean       _showInfoUpdate         = true;  // info page update button
     boolean       _showBack               = false; // show back button
+    boolean       _showTitle              = true;  // show title on page, default true
     boolean       _enableConfigPortal     = true;  // FOR autoconnect - start config portal if autoconnect failed
     boolean       _disableConfigPortal    = true;  // FOR autoconnect - stop config portal if cp wifi save
     String        _hostname               = "";    // hostname for esp8266 for dhcp, and or MDNS
